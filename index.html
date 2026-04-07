@@ -760,13 +760,21 @@
       function buildARSceneFor(stop){
         // A-Frame + AR.js barcode tracking
         const modelContent = stop.character.model3d ? `
-              <a-entity
+              <a-entity id="soldierModelWrap"
                 gltf-model="${stop.character.model3d}"
-                position="0 0 0.1"
-                rotation="-90 0 0"
-                scale="0.3 0.3 0.3"
-                animation__float="property: position; dir: alternate; dur: 1300; easing: easeInOutSine; loop: true; to: 0 0.1 0.1"
+                position="0 0.02 0"
+                rotation="0 180 0"
+                scale="0.85 0.85 0.85"
+                animation__float="property: position; dir: alternate; dur: 1300; easing: easeInOutSine; loop: true; to: 0 0.08 0"
               ></a-entity>
+              <a-box
+                id="soldierFallback"
+                position="0 0.35 0"
+                width="0.34"
+                height="0.7"
+                depth="0.22"
+                material="color: #00e5ff; transparent: true; opacity: 0.28"
+              ></a-box>
         ` : `
               <a-image
                 src="#sprite"
@@ -783,8 +791,8 @@
           <a-scene
             embedded
             vr-mode-ui="enabled: false"
-            renderer="colorManagement: true; physicallyCorrectLights: false"
-            arjs="sourceType: webcam; debugUIEnabled: false; detectionMode: mono_and_matrix; matrixCodeType: 4x4_BCH_13_9_3;"
+            renderer="colorManagement: true; physicallyCorrectLights: false; antialias: true;"
+            arjs="sourceType: webcam; debugUIEnabled: false; trackingMethod: best; detectionMode: mono_and_matrix; matrixCodeType: 3x3;"
           >
             <a-assets>
               <img id="sprite" src="${stop.character.sprite}" crossorigin="anonymous" />
@@ -807,6 +815,8 @@
               </a-entity>
             </a-marker>
 
+            <a-entity light="type: ambient; intensity: 1.1; color: #ffffff"></a-entity>
+            <a-entity light="type: directional; intensity: 0.8; color: #ffffff" position="1 2 1"></a-entity>
             <a-entity camera></a-entity>
           </a-scene>
         `;
@@ -824,6 +834,18 @@
           playSoldierVoice(stop);
           toast(`Stop ${stop.id + 1} unlocked.`);
         });
+
+        const soldierModelWrap = arMount.querySelector("#soldierModelWrap");
+        const soldierFallback = arMount.querySelector("#soldierFallback");
+        if(soldierModelWrap && soldierFallback){
+          soldierModelWrap.addEventListener("model-loaded", () => {
+            soldierFallback.setAttribute("visible", "false");
+          });
+          soldierModelWrap.addEventListener("model-error", () => {
+            toast("3D model not loaded. Showing fallback.");
+            soldierFallback.setAttribute("visible", "true");
+          });
+        }
       }
 
       async function startAR(stopId){
