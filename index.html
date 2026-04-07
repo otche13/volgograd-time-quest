@@ -62,8 +62,8 @@
     <script>
       const I18N = {
         ru: {
-          pageTitle: "Волгоградский исторический квест (MVP)",
-          pageSub: "В этом MVP нет настоящего AR. Кнопка «Сканировать AR-код» открывает видео-заглушку.",
+          pageTitle: "Волгоградский исторический квест",
+          pageSub: "Исторический маршрут по ключевым объектам города.",
           pageHint: "Положите ваши видео в <code>assets/videos/</code> с точными именами, показанными внизу плеера.",
           close: "Закрыть",
           scan: "Сканировать AR-код",
@@ -98,8 +98,8 @@
           ]
         },
         en: {
-          pageTitle: "Volgograd History Quest (MVP)",
-          pageSub: "No real AR in this MVP. Each \"Scan AR code\" button opens a video placeholder.",
+          pageTitle: "Volgograd History Quest",
+          pageSub: "A historical route through key city landmarks.",
           pageHint: "Put your videos into <code>assets/videos/</code> with the exact filenames shown in the player footer.",
           close: "Close",
           scan: "Scan AR code",
@@ -209,7 +209,10 @@
       list.addEventListener("click", (e) => {
         const btn = e.target.closest("button[data-index]");
         if (!btn) return;
-        const item = ITEMS[Number(btn.dataset.index)];
+        const idx = Number(btn.dataset.index);
+        // Only Mamayev Kurgan button opens video now.
+        if (idx !== 1) return;
+        const item = ITEMS[idx];
         openVideo(item);
       });
 
