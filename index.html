@@ -8,7 +8,11 @@
       body { margin: 0; font-family: system-ui, Arial, sans-serif; background: #0f111a; color: #fff; }
       .wrap { max-width: 900px; margin: 0 auto; padding: 16px; }
       h1 { margin: 0 0 6px; font-size: 22px; }
+      .topbar { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
       .sub { margin: 0 0 14px; color: #b7bed6; font-size: 14px; }
+      .langSwitch { display: flex; gap: 6px; }
+      .langBtn { background: #2a3150; color: #fff; border: 1px solid #3a4470; border-radius: 8px; padding: 6px 10px; font-weight: 700; cursor: pointer; }
+      .langBtn.active { background: #56e39f; color: #062017; border-color: #56e39f; }
       .list { display: grid; gap: 10px; }
       .item { background: #1a1f32; border: 1px solid #2a3150; border-radius: 12px; padding: 12px; }
       .title { font-weight: 800; font-size: 15px; margin-bottom: 4px; }
@@ -29,17 +33,23 @@
   </head>
   <body>
     <main class="wrap">
-      <h1>Volgograd History Quest (MVP)</h1>
-      <p class="sub">No real AR in this MVP. Each "Scan AR code" button opens a video placeholder.</p>
+      <div class="topbar">
+        <h1 id="pageTitle">Волгоградский исторический квест (MVP)</h1>
+        <div class="langSwitch">
+          <button id="langRuBtn" class="langBtn active">RU</button>
+          <button id="langEnBtn" class="langBtn">EN</button>
+        </div>
+      </div>
+      <p id="pageSub" class="sub">В этом MVP нет настоящего AR. Кнопка «Сканировать AR-код» открывает видео-заглушку.</p>
 
       <div id="list" class="list"></div>
-      <p class="small">Put your videos into <code>assets/videos/</code> with the exact filenames shown in the player footer.</p>
+      <p id="pageHint" class="small">Положите ваши видео в <code>assets/videos/</code> с точными именами, показанными внизу плеера.</p>
     </main>
 
     <div id="overlay" class="overlay">
       <div class="panel">
         <div class="bar">
-          <strong id="videoTitle">Video placeholder</strong>
+          <strong id="videoTitle">Видео-заглушка</strong>
           <button id="closeBtn">Close</button>
         </div>
         <div class="videoWrap">
@@ -50,35 +60,95 @@
     </div>
 
     <script>
+      const I18N = {
+        ru: {
+          pageTitle: "Волгоградский исторический квест (MVP)",
+          pageSub: "В этом MVP нет настоящего AR. Кнопка «Сканировать AR-код» открывает видео-заглушку.",
+          pageHint: "Положите ваши видео в <code>assets/videos/</code> с точными именами, показанными внизу плеера.",
+          close: "Закрыть",
+          scan: "Сканировать AR-код",
+          stop: "Точка",
+          expected: "Ожидаемое имя файла",
+          items: [
+            {
+              epoch: "Российская империя",
+              title: "Музей-заповедник «Старая Сарепта»",
+              description: "Историческое поселение, где можно увидеть купеческую культуру, ремесла и быт XVIII-XIX веков."
+            },
+            {
+              epoch: "СССР",
+              title: "Мамаев курган",
+              description: "Крупный мемориал Сталинградской битвы с знаковыми монументами и пространствами воинской памяти."
+            },
+            {
+              epoch: "СССР",
+              title: "Дом Павлова",
+              description: "Легендарная точка обороны времен ВОВ, символ стойкости и сопротивления в городском бою."
+            },
+            {
+              epoch: "СССР",
+              title: "Волгоградский планетарий",
+              description: "Научно-образовательная площадка, связанная с интересом советской эпохи к астрономии и космосу."
+            },
+            {
+              epoch: "Россия",
+              title: "Фонтан «Дружба народов»",
+              description: "Современная локация на набережной для прогулок, встреч и городских событий."
+            }
+          ]
+        },
+        en: {
+          pageTitle: "Volgograd History Quest (MVP)",
+          pageSub: "No real AR in this MVP. Each \"Scan AR code\" button opens a video placeholder.",
+          pageHint: "Put your videos into <code>assets/videos/</code> with the exact filenames shown in the player footer.",
+          close: "Close",
+          scan: "Scan AR code",
+          stop: "Stop",
+          expected: "Expected filename",
+          items: [
+            {
+              epoch: "Russian Empire",
+              title: "Museum-Reserve Old Sarepta",
+              description: "A historical settlement where visitors explore merchant culture, crafts, and daily life of the 18th-19th centuries."
+            },
+            {
+              epoch: "USSR",
+              title: "Mamayev Kurgan",
+              description: "A major memorial of the Battle of Stalingrad with iconic monuments and military remembrance spaces."
+            },
+            {
+              epoch: "USSR",
+              title: "Pavlov's House",
+              description: "A legendary defense point from WWII, symbolizing resilience and urban resistance during battle."
+            },
+            {
+              epoch: "USSR",
+              title: "Volgograd Planetarium",
+              description: "A science and education landmark connected with Soviet-era interest in astronomy and space."
+            },
+            {
+              epoch: "Russia",
+              title: "Friendship of Nations Fountain",
+              description: "A modern embankment landmark and social gathering area for walks, events, and city life."
+            }
+          ]
+        }
+      };
+
       const ITEMS = [
         {
-          epoch: "Russian Empire",
-          title: "Museum-Reserve Old Sarepta",
-          description: "A historical settlement where visitors explore merchant culture, crafts, and daily life of the 18th-19th centuries.",
           video: "assets/videos/stop1_old_sarepta.mp4"
         },
         {
-          epoch: "USSR",
-          title: "Mamayev Kurgan",
-          description: "A major memorial of the Battle of Stalingrad with iconic monuments and military remembrance spaces.",
           video: "assets/videos/stop2_mamayev_kurgan.mp4"
         },
         {
-          epoch: "USSR",
-          title: "Pavlov's House",
-          description: "A legendary defense point from WWII, symbolizing resilience and urban resistance during battle.",
           video: "assets/videos/stop3_pavlov_house.mp4"
         },
         {
-          epoch: "USSR",
-          title: "Volgograd Planetarium",
-          description: "A science and education landmark connected with Soviet-era interest in astronomy and space.",
           video: "assets/videos/stop4_planetarium.mp4"
         },
         {
-          epoch: "Russia",
-          title: "Friendship of Nations Fountain",
-          description: "A modern embankment landmark and social gathering area for walks, events, and city life.",
           video: "assets/videos/stop5_fountain.mp4"
         }
       ];
@@ -89,25 +159,41 @@
       const videoTitle = document.getElementById("videoTitle");
       const videoName = document.getElementById("videoName");
       const closeBtn = document.getElementById("closeBtn");
+      const pageTitle = document.getElementById("pageTitle");
+      const pageSub = document.getElementById("pageSub");
+      const pageHint = document.getElementById("pageHint");
+      const langRuBtn = document.getElementById("langRuBtn");
+      const langEnBtn = document.getElementById("langEnBtn");
+      let currentLang = "ru";
 
       function render() {
+        const t = I18N[currentLang];
+        pageTitle.textContent = t.pageTitle;
+        pageSub.textContent = t.pageSub;
+        pageHint.innerHTML = t.pageHint;
+        closeBtn.textContent = t.close;
+        langRuBtn.classList.toggle("active", currentLang === "ru");
+        langEnBtn.classList.toggle("active", currentLang === "en");
+
         list.innerHTML = "";
         ITEMS.forEach((item, idx) => {
+          const text = t.items[idx];
           const el = document.createElement("section");
           el.className = "item";
           el.innerHTML = `
-            <div class="title">Stop ${idx + 1}: ${item.title}</div>
-            <div class="epoch">${item.epoch}</div>
-            <div class="desc">${item.description}</div>
-            <button class="scan" data-index="${idx}">Scan AR code</button>
+            <div class="title">${t.stop} ${idx + 1}: ${text.title}</div>
+            <div class="epoch">${text.epoch}</div>
+            <div class="desc">${text.description}</div>
+            <button class="scan" data-index="${idx}">${t.scan}</button>
           `;
           list.appendChild(el);
         });
       }
 
       function openVideo(item) {
-        videoTitle.textContent = item.title;
-        videoName.textContent = `Expected filename: ${item.video}`;
+        const idx = ITEMS.indexOf(item);
+        videoTitle.textContent = I18N[currentLang].items[idx].title;
+        videoName.textContent = `${I18N[currentLang].expected}: ${item.video}`;
         video.src = item.video;
         overlay.classList.add("show");
         video.play().catch(() => {});
@@ -129,6 +215,8 @@
 
       closeBtn.addEventListener("click", closeVideo);
       overlay.addEventListener("click", (e) => { if (e.target === overlay) closeVideo(); });
+      langRuBtn.addEventListener("click", () => { currentLang = "ru"; render(); });
+      langEnBtn.addEventListener("click", () => { currentLang = "en"; render(); });
 
       render();
     </script>
