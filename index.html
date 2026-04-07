@@ -211,7 +211,7 @@
         if (!btn) return;
         const idx = Number(btn.dataset.index);
         // Only Mamayev Kurgan button opens video now.
-        if (idx !== 1) return;
+        if (idx !== 1 || idx !== 0) return;
         const item = ITEMS[idx];
         openVideo(item);
       });
