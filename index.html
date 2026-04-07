@@ -49,7 +49,7 @@
     <div id="overlay" class="overlay">
       <div class="panel">
         <div class="bar">
-           <strong id="videoTitle">Видео-заглушка</strong>
+          <strong id="videoTitle">Видео-заглушка</strong>
           <button id="closeBtn">Close</button>
         </div>
         <div class="videoWrap">
@@ -65,7 +65,6 @@
           pageTitle: "Волгоградский исторический квест",
           pageSub: "Исторический маршрут по ключевым объектам города.",
           pageHint: "Положите ваши видео в <code>assets/videos/</code> с точными именами, показанными внизу плеера.",
-          
           close: "Закрыть",
           scan: "Сканировать AR-код",
           stop: "Точка",
@@ -102,7 +101,6 @@
           pageTitle: "Volgograd History Quest",
           pageSub: "A historical route through key city landmarks.",
           pageHint: "Put your videos into <code>assets/videos/</code> with the exact filenames shown in the player footer.",
-          pageHint: "Put the photo into <code>assets/images/</code> with the exact filename shown in the footer.",
           close: "Close",
           scan: "Scan AR code",
           stop: "Stop",
@@ -138,25 +136,20 @@
       };
 
       const ITEMS = [
-            {
+        {
           video: "assets/videos/stop1_old_sarepta.mp4"
-         
         },
         {
           video: "assets/videos/stop2_mamayev_kurgan.mp4"
-         
         },
         {
           video: "assets/videos/stop3_pavlov_house.mp4"
-          
         },
         {
           video: "assets/videos/stop4_planetarium.mp4"
-          
         },
         {
           video: "assets/videos/stop5_fountain.mp4"
-          
         }
       ];
 
@@ -197,7 +190,7 @@
         });
       }
 
-      function openVideo(item) { {
+      function openVideo(item) {
         const idx = ITEMS.indexOf(item);
         videoTitle.textContent = I18N[currentLang].items[idx].title;
         videoName.textContent = `${I18N[currentLang].expected}: ${item.video}`;
@@ -207,7 +200,7 @@
       }
 
       function closeVideo() {
-       video.pause();
+        video.pause();
         video.removeAttribute("src");
         video.load();
         overlay.classList.remove("show");
