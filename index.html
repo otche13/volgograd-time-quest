@@ -1,120 +1,136 @@
 <!doctype html>
-<html lang="ru">
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>AR MVP Scanner</title>
-  <style>
-    body { margin: 0; font-family: system-ui, Arial, sans-serif; background: #111; color: #fff; }
-    .top { padding: 12px; background: #1b1b1b; display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
-    button { padding: 10px 14px; border: 0; border-radius: 10px; font-weight: 700; cursor: pointer; }
-    .start { background: #00d27a; color: #001b10; }
-    .stop { background: #ff5a5a; color: #2a0000; }
-    .msg { font-size: 13px; opacity: 0.9; }
-    #arMount { position: fixed; inset: 52px 0 0 0; background: #000; }
-    .markers { padding: 12px; display: flex; gap: 8px; flex-wrap: wrap; background: #171717; }
-    .markers img { width: 84px; height: 84px; object-fit: contain; background: #fff; border-radius: 8px; }
-  </style>
-</head>
-<body>
-  <div class="top">
-    <button id="startBtn" class="start">Start scan</button>
-    <button id="stopBtn" class="stop">Stop scan</button>
-    <div id="status" class="msg">Нажмите Start scan</div>
-  </div>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>Volgograd History Quest - MVP</title>
+    <style>
+      body { margin: 0; font-family: system-ui, Arial, sans-serif; background: #0f111a; color: #fff; }
+      .wrap { max-width: 900px; margin: 0 auto; padding: 16px; }
+      h1 { margin: 0 0 6px; font-size: 22px; }
+      .sub { margin: 0 0 14px; color: #b7bed6; font-size: 14px; }
+      .list { display: grid; gap: 10px; }
+      .item { background: #1a1f32; border: 1px solid #2a3150; border-radius: 12px; padding: 12px; }
+      .title { font-weight: 800; font-size: 15px; margin-bottom: 4px; }
+      .epoch { color: #ffd57a; font-size: 13px; margin-bottom: 6px; }
+      .desc { color: #cfd5ea; font-size: 13px; line-height: 1.35; margin-bottom: 10px; }
+      button { border: 0; border-radius: 10px; padding: 10px 12px; font-weight: 800; cursor: pointer; }
+      .scan { background: #56e39f; color: #082016; }
+      .small { margin-top: 12px; color: #9ea8cb; font-size: 12px; }
+      .overlay { position: fixed; inset: 0; background: rgba(0,0,0,.84); display: none; }
+      .overlay.show { display: block; }
+      .panel { position: absolute; inset: 0; display: grid; grid-template-rows: auto 1fr auto; }
+      .bar { padding: 12px; display: flex; justify-content: space-between; align-items: center; background: #11182a; }
+      .bar button { background: #ff6b6b; color: #300b0b; }
+      .videoWrap { display: grid; place-items: center; padding: 12px; }
+      video { width: 100%; max-width: 720px; max-height: 70vh; background: #000; border-radius: 10px; }
+      .name { padding: 10px 12px; color: #cfd5ea; font-size: 13px; background: #11182a; }
+    </style>
+  </head>
+  <body>
+    <main class="wrap">
+      <h1>Volgograd History Quest (MVP)</h1>
+      <p class="sub">No real AR in this MVP. Each "Scan AR code" button opens a video placeholder.</p>
 
-  <div class="markers">
-    <img src="assets/markers/marker_0.png" alt="marker 0">
-    <img src="assets/markers/marker_1.png" alt="marker 1">
-    <img src="assets/markers/marker_2.png" alt="marker 2">
-    <img src="assets/markers/marker_3.png" alt="marker 3">
-    <img src="assets/markers/marker_4.png" alt="marker 4">
-  </div>
+      <div id="list" class="list"></div>
+      <p class="small">Put your videos into <code>assets/videos/</code> with the exact filenames shown in the player footer.</p>
+    </main>
 
-  <div id="arMount"></div>
+    <div id="overlay" class="overlay">
+      <div class="panel">
+        <div class="bar">
+          <strong id="videoTitle">Video placeholder</strong>
+          <button id="closeBtn">Close</button>
+        </div>
+        <div class="videoWrap">
+          <video id="video" controls playsinline preload="metadata"></video>
+        </div>
+        <div id="videoName" class="name"></div>
+      </div>
+    </div>
 
-  <script>
-    const statusEl = document.getElementById("status");
-    const arMount = document.getElementById("arMount");
-    let running = false;
-
-    function setStatus(text){ statusEl.textContent = text; }
-
-    async function loadScript(src){
-      if (document.querySelector(`script[data-src="${src}"]`)) return;
-      await new Promise((resolve, reject) => {
-        const s = document.createElement("script");
-        s.src = src;
-        s.async = true;
-        s.dataset.src = src;
-        s.onload = resolve;
-        s.onerror = reject;
-        document.head.appendChild(s);
-      });
-    }
-
-    function stopScan(){
-      running = false;
-      arMount.innerHTML = "";
-      setStatus("Сканирование остановлено");
-    }
-
-    async function startScan(){
-      try{
-        const secure = location.protocol === "https:" || location.hostname === "localhost" || location.hostname === "127.0.0.1";
-        if(!secure){
-          setStatus("Нужен HTTPS для камеры");
-          return;
+    <script>
+      const ITEMS = [
+        {
+          epoch: "Russian Empire",
+          title: "Museum-Reserve Old Sarepta",
+          description: "A historical settlement where visitors explore merchant culture, crafts, and daily life of the 18th-19th centuries.",
+          video: "assets/videos/stop1_old_sarepta.mp4"
+        },
+        {
+          epoch: "USSR",
+          title: "Mamayev Kurgan",
+          description: "A major memorial of the Battle of Stalingrad with iconic monuments and military remembrance spaces.",
+          video: "assets/videos/stop2_mamayev_kurgan.mp4"
+        },
+        {
+          epoch: "USSR",
+          title: "Pavlov's House",
+          description: "A legendary defense point from WWII, symbolizing resilience and urban resistance during battle.",
+          video: "assets/videos/stop3_pavlov_house.mp4"
+        },
+        {
+          epoch: "USSR",
+          title: "Volgograd Planetarium",
+          description: "A science and education landmark connected with Soviet-era interest in astronomy and space.",
+          video: "assets/videos/stop4_planetarium.mp4"
+        },
+        {
+          epoch: "Russia",
+          title: "Friendship of Nations Fountain",
+          description: "A modern embankment landmark and social gathering area for walks, events, and city life.",
+          video: "assets/videos/stop5_fountain.mp4"
         }
-        if(!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia)){
-          setStatus("Браузер не поддерживает камеру");
-          return;
-        }
+      ];
 
-        setStatus("Запрашиваю камеру...");
-        const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" }, audio: false });
-        stream.getTracks().forEach(t => t.stop());
+      const list = document.getElementById("list");
+      const overlay = document.getElementById("overlay");
+      const video = document.getElementById("video");
+      const videoTitle = document.getElementById("videoTitle");
+      const videoName = document.getElementById("videoName");
+      const closeBtn = document.getElementById("closeBtn");
 
-        await loadScript("https://aframe.io/releases/1.4.2/aframe.min.js");
-        await loadScript("https://raw.githack.com/AR-js-org/AR.js/3.4.5/aframe/build/aframe-ar.js");
-
-        arMount.innerHTML = `
-          <a-scene
-            embedded
-            vr-mode-ui="enabled: false"
-            renderer="antialias: true; alpha: true"
-            arjs="sourceType: webcam; facingMode: environment; debugUIEnabled: false; trackingMethod: best; detectionMode: mono_and_matrix; matrixCodeType: 3x3;"
-          >
-            <a-marker type="barcode" value="0">
-              <a-box position="0 0.5 0" material="color: #00e5ff; opacity: 0.7"></a-box>
-            </a-marker>
-            <a-marker type="barcode" value="1">
-              <a-box position="0 0.5 0" material="color: #00e5ff; opacity: 0.7"></a-box>
-            </a-marker>
-            <a-marker type="barcode" value="2">
-              <a-box position="0 0.5 0" material="color: #00e5ff; opacity: 0.7"></a-box>
-            </a-marker>
-            <a-marker type="barcode" value="3">
-              <a-box position="0 0.5 0" material="color: #00e5ff; opacity: 0.7"></a-box>
-            </a-marker>
-            <a-marker type="barcode" value="4">
-              <a-box position="0 0.5 0" material="color: #00e5ff; opacity: 0.7"></a-box>
-            </a-marker>
-            <a-entity camera></a-entity>
-          </a-scene>
-        `;
-
-        running = true;
-        setStatus("Камера включена. Наведите на marker 0-4");
-      }catch(e){
-        setStatus("Ошибка запуска камеры/AR");
+      function render() {
+        list.innerHTML = "";
+        ITEMS.forEach((item, idx) => {
+          const el = document.createElement("section");
+          el.className = "item";
+          el.innerHTML = `
+            <div class="title">Stop ${idx + 1}: ${item.title}</div>
+            <div class="epoch">${item.epoch}</div>
+            <div class="desc">${item.description}</div>
+            <button class="scan" data-index="${idx}">Scan AR code</button>
+          `;
+          list.appendChild(el);
+        });
       }
-    }
 
-    document.getElementById("startBtn").addEventListener("click", () => {
-      if(!running) startScan();
-    });
-    document.getElementById("stopBtn").addEventListener("click", stopScan);
-  </script>
-</body>
+      function openVideo(item) {
+        videoTitle.textContent = item.title;
+        videoName.textContent = `Expected filename: ${item.video}`;
+        video.src = item.video;
+        overlay.classList.add("show");
+        video.play().catch(() => {});
+      }
+
+      function closeVideo() {
+        video.pause();
+        video.removeAttribute("src");
+        video.load();
+        overlay.classList.remove("show");
+      }
+
+      list.addEventListener("click", (e) => {
+        const btn = e.target.closest("button[data-index]");
+        if (!btn) return;
+        const item = ITEMS[Number(btn.dataset.index)];
+        openVideo(item);
+      });
+
+      closeBtn.addEventListener("click", closeVideo);
+      overlay.addEventListener("click", (e) => { if (e.target === overlay) closeVideo(); });
+
+      render();
+    </script>
+  </body>
 </html>
