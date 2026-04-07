@@ -491,7 +491,11 @@
           shortRu: "Старейшая колония на юге России: купеческая культура, ремёсла, быт 18–19 веков.",
           shortEn: "One of the oldest southern settlements: merchant culture, crafts, and daily life of the 18–19th centuries.",
           shortSw: "Moja ya makazi ya kale kusini: utamaduni wa wafanyabiashara, ufundi, na maisha ya karne ya 18–19.",
-          character: { name: "Merchant / Peasant", sprite: "assets/characters/empire_merchant.svg" },
+          character: {
+            name: "WWII Soviet Soldier",
+            sprite: "assets/characters/empire_merchant.svg",
+            model3d: "assets/models/ww2_soviet_uniform.glb"
+          },
         },
         {
           id: 1,
@@ -529,7 +533,11 @@
           shortRu: "Эпоха науки: планетарий как символ интереса к космосу и просвещению.",
           shortEn: "Era of science: a planetarium as a symbol of space curiosity and education.",
           shortSw: "Enzi ya sayansi: planetari kama ishara ya hamu ya anga na elimu.",
-          character: { name: "Cosmonaut / Scientist", sprite: "assets/characters/ussr_cosmonaut.svg" },
+          character: {
+            name: "WWII Soviet Soldier",
+            sprite: "assets/characters/ussr_cosmonaut.svg",
+            model3d: "assets/models/ww2_soviet_uniform.glb"
+          },
         },
         {
           id: 4,
@@ -539,7 +547,11 @@
           shortRu: "Современная набережная: место встреч, прогулок и городских событий.",
           shortEn: "Modern embankment: a popular place for walks, meetups, and city events.",
           shortSw: "Ufukwe wa kisasa: mahali pa matembezi, mikutano, na matukio ya jiji.",
-          character: { name: "Modern Explorer", sprite: "assets/characters/modern_explorer.svg" },
+          character: {
+            name: "WWII Soviet Soldier",
+            sprite: "assets/characters/modern_explorer.svg",
+            model3d: "assets/models/ww2_soviet_uniform.glb"
+          },
         },
       ];
 
@@ -708,8 +720,7 @@
       }
 
       function playSoldierVoice(stop){
-        // Only for WWII soldier points (IDs 1 and 2)
-        if(!(stop.id === 1 || stop.id === 2)) return;
+        // Soldier voice for all AR points
         stopSoldierVoice();
         soldierAudio.play().catch(() => {
           // Fallback when mp3 is missing or blocked
