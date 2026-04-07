@@ -1,0 +1,51 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#001018"/>
+      <stop offset="1" stop-color="#002a3e"/>
+    </linearGradient>
+    <linearGradient id="holo" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#00f6ff" stop-opacity=".95"/>
+      <stop offset=".55" stop-color="#00b8ff" stop-opacity=".78"/>
+      <stop offset="1" stop-color="#00f6ff" stop-opacity=".55"/>
+    </linearGradient>
+    <filter id="glow">
+      <feGaussianBlur stdDeviation="7" result="b"/>
+      <feColorMatrix in="b" type="matrix" values="
+        0 0 0 0 0
+        0 0 0 0 0.88
+        0 0 0 0 1
+        0 0 0 .95 0" result="c"/>
+      <feMerge>
+        <feMergeNode in="c"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+    <pattern id="scan" width="10" height="10" patternUnits="userSpaceOnUse">
+      <rect width="10" height="10" fill="none"/>
+      <rect y="6" width="10" height="1" fill="#bfffff" opacity=".22"/>
+    </pattern>
+  </defs>
+
+  <rect width="512" height="512" rx="44" fill="url(#bg)"/>
+  <rect width="512" height="512" rx="44" fill="url(#scan)" opacity=".55"/>
+
+  <g filter="url(#glow)">
+    <!-- hair -->
+    <path d="M188 206c6-48 44-80 68-80s62 32 68 80c-18-12-44-20-68-20s-50 8-68 20z" fill="url(#holo)" opacity=".75"/>
+    <!-- head -->
+    <circle cx="256" cy="232" r="46" fill="url(#holo)"/>
+    <!-- hoodie -->
+    <path d="M148 438c12-102 60-170 104-196 10 14 26 22 46 22s36-8 46-22c44 26 92 94 104 196H148z" fill="url(#holo)" opacity=".88"/>
+    <!-- phone/tablet -->
+    <rect x="312" y="320" width="54" height="86" rx="14" fill="#bfffff" opacity=".22"/>
+    <rect x="322" y="336" width="34" height="54" rx="10" fill="#001620" opacity=".30"/>
+    <circle cx="339" cy="330" r="4" fill="#bfffff" opacity=".22"/>
+    <!-- base -->
+    <ellipse cx="256" cy="452" rx="170" ry="18" fill="#00e5ff" opacity=".18"/>
+  </g>
+
+  <g font-family="system-ui, -apple-system, Segoe UI, Roboto, Arial" text-anchor="middle">
+    <text x="256" y="486" font-size="20" fill="#bfffff" opacity=".9">Modern Explorer</text>
+  </g>
+</svg>

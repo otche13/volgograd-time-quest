@@ -1,0 +1,868 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#0b1220" />
+    <title>Volgograd Time Quest — Mobile AR</title>
+    <style>
+      :root{
+        --bg:#0b1220;
+        --card:#101b33;
+        --card2:#0f2440;
+        --text:#f5f7ff;
+        --muted:#b9c3ea;
+        --accent:#ffb000;
+        --accent2:#ff4d6d;
+        --ok:#2ee59d;
+        --warn:#ffd166;
+        --holo:#00e5ff;
+        --shadow: 0 18px 45px rgba(0,0,0,.45);
+        --radius: 18px;
+        --radius2: 26px;
+      }
+      *{box-sizing:border-box}
+      html,body{height:100%}
+      body{
+        margin:0;
+        font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, "Noto Sans", Arial, "Apple Color Emoji","Segoe UI Emoji";
+        color:var(--text);
+        background:
+          radial-gradient(1100px 700px at 15% 10%, rgba(255,176,0,.20), transparent 60%),
+          radial-gradient(900px 650px at 85% 20%, rgba(255,77,109,.17), transparent 55%),
+          radial-gradient(850px 600px at 55% 95%, rgba(0,229,255,.14), transparent 60%),
+          linear-gradient(180deg, #070b14 0%, var(--bg) 55%, #060a12 100%);
+        overflow-x:hidden;
+      }
+      .kitenge{
+        position:fixed; inset:0;
+        pointer-events:none;
+        opacity:.16;
+        background-image:
+          repeating-linear-gradient(45deg, rgba(255,176,0,.55) 0 10px, rgba(255,176,0,0) 10px 20px),
+          repeating-linear-gradient(-45deg, rgba(0,229,255,.55) 0 10px, rgba(0,229,255,0) 10px 20px),
+          radial-gradient(circle at 25% 30%, rgba(255,77,109,.55) 0 4px, transparent 5px),
+          radial-gradient(circle at 70% 60%, rgba(255,77,109,.35) 0 3px, transparent 4px);
+        mix-blend-mode:overlay;
+      }
+      .wrap{max-width:980px; margin:0 auto; padding:18px 14px 42px}
+      header{
+        position:sticky; top:0; z-index:10;
+        backdrop-filter: blur(14px);
+        background: linear-gradient(180deg, rgba(11,18,32,.92) 0%, rgba(11,18,32,.70) 55%, rgba(11,18,32,0) 100%);
+        padding: 12px 0 10px;
+      }
+      .topbar{
+        display:flex; align-items:center; justify-content:space-between; gap:12px;
+      }
+      .brand{
+        display:flex; align-items:center; gap:12px;
+      }
+      .logo{
+        width:44px; height:44px; border-radius:14px;
+        background:
+          radial-gradient(circle at 30% 30%, rgba(255,176,0,.9), rgba(255,176,0,0) 55%),
+          radial-gradient(circle at 75% 70%, rgba(0,229,255,.9), rgba(0,229,255,0) 55%),
+          linear-gradient(135deg, rgba(255,77,109,.95), rgba(16,27,51,.2));
+        box-shadow: 0 12px 30px rgba(0,0,0,.35);
+        border:1px solid rgba(255,255,255,.10);
+      }
+      h1{font-size:16px; margin:0; line-height:1.2}
+      .subtitle{font-size:12px; color:var(--muted); margin-top:2px}
+      .chiprow{display:flex; gap:8px; flex-wrap:wrap; justify-content:flex-end}
+      .chip{
+        border:1px solid rgba(255,255,255,.12);
+        background: rgba(16,27,51,.55);
+        padding:8px 10px;
+        border-radius:999px;
+        font-size:12px;
+        color:var(--muted);
+      }
+      .chip strong{color:var(--text)}
+      .grid{
+        display:grid;
+        grid-template-columns: 1fr;
+        gap:12px;
+        margin-top:12px;
+      }
+      @media (min-width: 920px){
+        .grid{grid-template-columns: 1.15fr .85fr; align-items:start}
+      }
+      .card{
+        background: linear-gradient(180deg, rgba(16,27,51,.92), rgba(10,16,31,.92));
+        border:1px solid rgba(255,255,255,.11);
+        border-radius: var(--radius2);
+        box-shadow: var(--shadow);
+        overflow:hidden;
+      }
+      .card .hd{
+        padding:14px 14px 12px;
+        display:flex; align-items:center; justify-content:space-between; gap:10px;
+        background:
+          radial-gradient(650px 210px at 10% 10%, rgba(255,176,0,.16), transparent 55%),
+          radial-gradient(620px 220px at 90% 10%, rgba(0,229,255,.12), transparent 55%),
+          linear-gradient(180deg, rgba(16,27,51,.85), rgba(16,27,51,0));
+      }
+      .card .hd h2{
+        margin:0; font-size:14px;
+      }
+      .card .bd{padding:14px}
+      .btn{
+        appearance:none; border:0; cursor:pointer;
+        border-radius: 16px;
+        padding: 14px 14px;
+        font-weight: 800;
+        letter-spacing:.2px;
+        color:#10131b;
+        background: linear-gradient(135deg, var(--accent), #ffe08a);
+        box-shadow: 0 14px 30px rgba(255,176,0,.18);
+        width:100%;
+        display:flex; align-items:center; justify-content:center; gap:10px;
+        font-size:15px;
+      }
+      .btn.secondary{
+        background: linear-gradient(135deg, rgba(0,229,255,.9), rgba(0,229,255,.55));
+        box-shadow: 0 14px 30px rgba(0,229,255,.12);
+      }
+      .btn.ghost{
+        background: rgba(255,255,255,.06);
+        color: var(--text);
+        border: 1px solid rgba(255,255,255,.14);
+        box-shadow:none;
+      }
+      .btn:active{transform: translateY(1px)}
+      .btn small{font-weight:700; opacity:.85}
+      .steps{display:flex; flex-direction:column; gap:10px}
+      .step{
+        border-radius: var(--radius);
+        border:1px solid rgba(255,255,255,.12);
+        background: linear-gradient(180deg, rgba(15,36,64,.66), rgba(15,36,64,.25));
+        padding: 12px 12px;
+        position:relative;
+        overflow:hidden;
+      }
+      .step:before{
+        content:"";
+        position:absolute; inset:-2px -2px auto -2px;
+        height: 56px;
+        background: radial-gradient(500px 120px at 15% 10%, rgba(255,176,0,.24), transparent 55%),
+                    radial-gradient(520px 140px at 85% 10%, rgba(255,77,109,.18), transparent 55%);
+        opacity:.9;
+      }
+      .step > *{position:relative}
+      .row{display:flex; align-items:flex-start; justify-content:space-between; gap:10px}
+      .meta{display:flex; flex-direction:column; gap:4px}
+      .epoch{font-size:12px; color:var(--muted)}
+      .title{font-size:14px; font-weight:900}
+      .facts{font-size:12px; color:var(--muted); margin-top:6px; line-height:1.35}
+      .badge{
+        font-size:12px;
+        font-weight:900;
+        padding:7px 10px;
+        border-radius:999px;
+        border:1px solid rgba(255,255,255,.12);
+        background: rgba(255,255,255,.06);
+        color: var(--muted);
+        white-space:nowrap;
+      }
+      .badge.ok{color:#06140f; background: linear-gradient(135deg, var(--ok), rgba(46,229,157,.45)); border-color: rgba(46,229,157,.55)}
+      .ctaRow{display:flex; gap:10px; margin-top:10px}
+      .ctaRow .btn{padding:12px 12px; border-radius:14px; font-size:14px}
+      .ctaRow .btn.ghost{font-weight:900}
+      .small{font-size:12px; color:var(--muted); line-height:1.4}
+      .hint{
+        border-radius: var(--radius);
+        border:1px dashed rgba(255,255,255,.18);
+        background: rgba(255,255,255,.04);
+        padding:12px;
+        margin-top:10px;
+      }
+      .hint b{color:var(--text)}
+      .progress{
+        height: 10px;
+        border-radius:999px;
+        background: rgba(255,255,255,.08);
+        border:1px solid rgba(255,255,255,.10);
+        overflow:hidden;
+      }
+      .progress > div{
+        height:100%;
+        width:0%;
+        background: linear-gradient(90deg, var(--accent2), var(--accent), rgba(0,229,255,.9));
+      }
+      .twoBtns{display:flex; gap:10px; flex-wrap:wrap}
+      .twoBtns .btn{width:auto; flex:1 1 160px}
+      /* Overlays */
+      .overlay{
+        position:fixed; inset:0; z-index:100;
+        background: rgba(5,8,14,.80);
+        backdrop-filter: blur(8px);
+        display:none;
+      }
+      .overlay.show{display:block}
+      .sheet{
+        position:absolute; left:0; right:0; bottom:0;
+        border-radius: 22px 22px 0 0;
+        background: linear-gradient(180deg, rgba(16,27,51,.96), rgba(8,12,22,.96));
+        border:1px solid rgba(255,255,255,.12);
+        box-shadow: 0 -20px 60px rgba(0,0,0,.55);
+        padding: 14px;
+        max-height: 78vh;
+        overflow:auto;
+      }
+      .sheet h3{margin:0; font-size:14px}
+      .sheet .p{margin:8px 0 0; color:var(--muted); font-size:12px; line-height:1.45}
+      .sheet .closeRow{display:flex; justify-content:space-between; align-items:center; gap:12px}
+      .sheet .closeRow .btn{width:auto; padding:10px 12px; font-size:13px; border-radius:14px}
+      /* AR screen */
+      .arScreen{
+        position:fixed; inset:0; z-index:200;
+        background:#000;
+        display:none;
+      }
+      .arScreen.show{display:block}
+      .arTop{
+        position:absolute; left:0; right:0; top:0; z-index:10;
+        padding: 12px;
+        display:flex; justify-content:space-between; align-items:flex-start; gap:10px;
+        background: linear-gradient(180deg, rgba(0,0,0,.72), rgba(0,0,0,0));
+      }
+      .arTop .pill{
+        border-radius:999px;
+        padding: 9px 12px;
+        border:1px solid rgba(255,255,255,.16);
+        background: rgba(16,27,51,.55);
+        color: var(--text);
+        font-size:12px;
+        max-width: 72vw;
+      }
+      .arTop .pill b{color: var(--accent)}
+      .arTop .miniBtn{
+        appearance:none; border:0; cursor:pointer;
+        border-radius: 14px;
+        padding: 10px 12px;
+        font-weight: 900;
+        font-size: 12px;
+        color: var(--text);
+        background: rgba(255,255,255,.10);
+        border:1px solid rgba(255,255,255,.14);
+      }
+      .arBottom{
+        position:absolute; left:0; right:0; bottom:0; z-index:12;
+        padding: 12px;
+        background: linear-gradient(180deg, rgba(0,0,0,0), rgba(0,0,0,.78));
+      }
+      .langCard{
+        border-radius: 18px;
+        border: 1px solid rgba(255,255,255,.14);
+        background: rgba(16,27,51,.60);
+        padding: 12px;
+      }
+      .langRow{display:flex; gap:10px; flex-wrap:wrap; margin-top:10px}
+      .langRow .btn{width:auto; flex:1 1 140px; padding:12px 12px; font-size:14px; border-radius:14px}
+      .fact{
+        margin-top:10px;
+        font-size: 13px;
+        color: var(--text);
+        line-height: 1.35;
+      }
+      .fact small{display:block; color: var(--muted); margin-top:5px}
+      .toast{
+        position:fixed; left:12px; right:12px; top:78px; z-index:300;
+        border-radius:16px;
+        border:1px solid rgba(255,255,255,.14);
+        background: rgba(16,27,51,.82);
+        padding: 10px 12px;
+        box-shadow: var(--shadow);
+        font-size: 13px;
+        color: var(--muted);
+        display:none;
+      }
+      .toast.show{display:block}
+      /* Marker gallery */
+      .markerGrid{
+        display:grid;
+        grid-template-columns: 1fr 1fr;
+        gap:10px;
+        margin-top:12px;
+      }
+      @media (min-width:720px){ .markerGrid{grid-template-columns: 1fr 1fr 1fr} }
+      .markerCard{
+        border-radius: 16px;
+        border:1px solid rgba(255,255,255,.12);
+        background: rgba(255,255,255,.05);
+        padding: 10px;
+      }
+      .markerCard img{
+        width:100%;
+        aspect-ratio: 1/1;
+        object-fit: contain;
+        border-radius: 12px;
+        background: #fff;
+        border: 1px solid rgba(0,0,0,.12);
+      }
+      .markerCard .cap{
+        margin-top:8px;
+        font-size:12px;
+        color: var(--muted);
+        line-height:1.25;
+      }
+      .markerCard .cap b{color: var(--text)}
+      /* Simple "holo" preview */
+      .holoPreview{
+        display:flex; align-items:center; gap:12px;
+        margin-top:10px;
+        padding: 12px;
+        border-radius: 18px;
+        border: 1px solid rgba(0,229,255,.22);
+        background: radial-gradient(500px 160px at 20% 15%, rgba(0,229,255,.18), transparent 60%),
+                    radial-gradient(420px 160px at 85% 30%, rgba(255,176,0,.12), transparent 60%),
+                    rgba(255,255,255,.04);
+      }
+      .holoAvatar{
+        width:68px; height:68px; border-radius: 18px;
+        border: 1px solid rgba(0,229,255,.35);
+        background: rgba(0,0,0,.25);
+        display:grid; place-items:center;
+        overflow:hidden;
+        position:relative;
+        box-shadow: 0 16px 40px rgba(0,229,255,.08);
+      }
+      .holoAvatar img{width:100%; height:100%; object-fit:cover; filter: saturate(1.2) contrast(1.05)}
+      .scanlines{
+        position:absolute; inset:0;
+        background: repeating-linear-gradient(180deg, rgba(0,229,255,.0) 0 6px, rgba(0,229,255,.18) 6px 7px);
+        mix-blend-mode: screen;
+        opacity:.65;
+        transform: translateY(0);
+        animation: scan 2.2s linear infinite;
+      }
+      @keyframes scan{0%{transform:translateY(-12px)} 100%{transform:translateY(12px)}}
+      .glow{
+        position:absolute; inset:-18px;
+        background: radial-gradient(circle at 50% 35%, rgba(0,229,255,.28), transparent 55%);
+        filter: blur(10px);
+      }
+      .divider{height:1px; background: rgba(255,255,255,.10); margin: 12px 0}
+      a{color: var(--accent); text-decoration:none}
+      a:hover{text-decoration:underline}
+      .danger{
+        color:#120a0f;
+        background: linear-gradient(135deg, #ff4d6d, #ffa3b3);
+        border:0;
+      }
+      .sr{position:absolute; left:-9999px; width:1px; height:1px; overflow:hidden}
+    </style>
+  </head>
+  <body>
+    <div class="kitenge" aria-hidden="true"></div>
+    <div class="toast" id="toast"></div>
+
+    <header>
+      <div class="wrap">
+        <div class="topbar">
+          <div class="brand">
+            <div class="logo" aria-hidden="true"></div>
+            <div>
+              <h1>Volgograd Time Quest</h1>
+              <div class="subtitle">Mobile AR route • Youth-friendly • English / Kiswahili</div>
+            </div>
+          </div>
+          <div class="chiprow">
+            <div class="chip"><strong id="doneCount">0</strong>/5 done</div>
+            <div class="chip">Works in Safari/Chrome</div>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <main class="wrap">
+      <div class="grid">
+        <section class="card">
+          <div class="hd">
+            <h2>Route (5 stops, chronological)</h2>
+            <div class="badge" id="progressBadge">0% complete</div>
+          </div>
+          <div class="bd">
+            <div class="progress" aria-label="progress"><div id="progressBar"></div></div>
+            <div class="hint">
+              <div class="small">
+                <b>How to play:</b> open <b>Markers</b> on another phone (or print), go to a location, press <b>Scan AR marker</b>, and point the camera at the correct marker. When the hologram appears — choose language and you’ll get a quick fact.
+              </div>
+            </div>
+            <div class="divider"></div>
+            <div class="steps" id="steps"></div>
+            <div class="divider"></div>
+            <div class="twoBtns">
+              <button class="btn secondary" id="openMarkersBtn">Markers (download/print)</button>
+              <button class="btn ghost" id="resetBtn">Reset progress</button>
+            </div>
+            <div class="hint" style="margin-top:12px">
+              <div class="small">
+                <b>Tip for Tanzania youth groups:</b> split roles — one person holds the marker screen, another scans; swap at each stop. It’s faster and more fun.
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <aside class="card">
+          <div class="hd">
+            <h2>AR & device check</h2>
+            <div class="badge" id="deviceBadge">Checking…</div>
+          </div>
+          <div class="bd">
+            <div class="small" id="deviceText">We’ll detect camera + WebRTC support. If something fails, you’ll get a clear fallback guide.</div>
+            <div class="holoPreview" aria-label="hologram preview">
+              <div class="holoAvatar">
+                <div class="glow" aria-hidden="true"></div>
+                <img id="holoPreviewImg" alt="Hologram character preview" />
+                <div class="scanlines" aria-hidden="true"></div>
+              </div>
+              <div>
+                <div style="font-weight:900">Hologram characters</div>
+                <div class="small">Stable 2D sprites with hologram glow + scanlines (works best on mobile browsers).</div>
+              </div>
+            </div>
+            <div class="divider"></div>
+            <button class="btn" id="quickScanBtn">Quick scan (start at Stop 1)</button>
+            <div class="small" style="margin-top:10px">
+              If Safari asks — allow camera. On iPhone, keep Low Power Mode off for smoother AR.
+            </div>
+          </div>
+        </aside>
+      </div>
+    </main>
+
+    <!-- Markers overlay -->
+    <div class="overlay" id="markersOverlay" role="dialog" aria-modal="true" aria-label="Markers">
+      <div class="sheet">
+        <div class="closeRow">
+          <h3>AR Markers (IDs 0–4)</h3>
+          <button class="btn ghost" id="closeMarkersBtn">Close</button>
+        </div>
+        <div class="p">
+          <b>Print</b> (best): each marker 8–10 cm, black/white, no reflections. Or <b>use a second phone</b>: open this page and keep the marker full brightness.
+        </div>
+        <div class="markerGrid" id="markerGrid"></div>
+        <div class="divider"></div>
+        <div class="p">
+          <b>Important:</b> each stop has its own marker. The scanner checks the marker ID, so you can’t “skip” a stop with the wrong one.
+        </div>
+      </div>
+    </div>
+
+    <!-- AR screen -->
+    <div class="arScreen" id="arScreen" aria-label="AR scanner">
+      <div class="arTop">
+        <div class="pill" id="arTitle">Scan marker…</div>
+        <button class="miniBtn" id="arExitBtn">Exit</button>
+      </div>
+
+      <div class="arBottom">
+        <div class="langCard" id="langCard" style="display:none">
+          <div style="font-weight:900" id="langHead">Marker found!</div>
+          <div class="fact" id="factText"></div>
+          <div class="langRow">
+            <button class="btn" id="langEnBtn">English</button>
+            <button class="btn secondary" id="langSwBtn">Kiswahili</button>
+            <button class="btn ghost" id="continueBtn">Continue</button>
+          </div>
+          <div class="small" style="margin-top:8px; color: var(--muted)">
+            If the hologram flickers, move the camera slowly and keep the marker flat in the center.
+          </div>
+        </div>
+      </div>
+
+      <!-- A-Frame scene injected by JS -->
+      <div id="arMount" style="position:absolute; inset:0"></div>
+    </div>
+
+    <script>
+      // ---------- Content ----------
+      const STOPS = [
+        {
+          id: 0,
+          epochRu: "Российская империя",
+          epochEn: "Russian Empire",
+          place: "Museum-Reserve “Old Sarepta” (Старая Сарепта)",
+          shortRu: "Старейшая колония на юге России: купеческая культура, ремёсла, быт 18–19 веков.",
+          shortEn: "One of the oldest southern settlements: merchant culture, crafts, and daily life of the 18–19th centuries.",
+          shortSw: "Moja ya makazi ya kale kusini: utamaduni wa wafanyabiashara, ufundi, na maisha ya karne ya 18–19.",
+          character: { name: "Merchant / Peasant", sprite: "assets/characters/empire_merchant.svg" },
+        },
+        {
+          id: 1,
+          epochRu: "СССР",
+          epochEn: "USSR",
+          place: "Mamayev Kurgan (The Motherland Calls, Hall of Military Glory)",
+          shortRu: "Символ Победы в Сталинградской битве: мемориал, скульптура, зал славы.",
+          shortEn: "A key symbol of the Battle of Stalingrad: memorial complex, iconic statue, and the Hall of Military Glory.",
+          shortSw: "Alama muhimu ya Vita vya Stalingrad: eneo la kumbukumbu, sanamu maarufu, na Ukumbi wa Utukufu wa Kijeshi.",
+          character: { name: "Soviet Soldier (WWII)", sprite: "assets/characters/ussr_soldier.svg" },
+        },
+        {
+          id: 2,
+          epochRu: "СССР",
+          epochEn: "USSR",
+          place: "Pavlov’s House (Дом Павлова)",
+          shortRu: "Дом-легенда обороны: удерживался бойцами недели под постоянными атаками.",
+          shortEn: "A legendary defense point: held for weeks under heavy attacks.",
+          shortSw: "Sehemu ya ulinzi wa kihistoria: ilishikiliwa kwa wiki chini ya mashambulizi makali.",
+          character: { name: "Soviet Commander", sprite: "assets/characters/ussr_commander.svg" },
+        },
+        {
+          id: 3,
+          epochRu: "СССР",
+          epochEn: "USSR",
+          place: "Volgograd Planetarium (Планетарий)",
+          shortRu: "Эпоха науки: планетарий как символ интереса к космосу и просвещению.",
+          shortEn: "Era of science: a planetarium as a symbol of space curiosity and education.",
+          shortSw: "Enzi ya sayansi: planetari kama ishara ya hamu ya anga na elimu.",
+          character: { name: "Cosmonaut / Scientist", sprite: "assets/characters/ussr_cosmonaut.svg" },
+        },
+        {
+          id: 4,
+          epochRu: "Россия",
+          epochEn: "Russia",
+          place: "Fountain “Friendship of Nations” (Central Embankment)",
+          shortRu: "Современная набережная: место встреч, прогулок и городских событий.",
+          shortEn: "Modern embankment: a popular place for walks, meetups, and city events.",
+          shortSw: "Ufukwe wa kisasa: mahali pa matembezi, mikutano, na matukio ya jiji.",
+          character: { name: "Modern Explorer", sprite: "assets/characters/modern_explorer.svg" },
+        },
+      ];
+
+      const STORAGE_KEY = "vtq_progress_v1";
+      const toastEl = document.getElementById("toast");
+
+      function toast(msg, ms=2200){
+        toastEl.textContent = msg;
+        toastEl.classList.add("show");
+        window.clearTimeout(toastEl._t);
+        toastEl._t = window.setTimeout(() => toastEl.classList.remove("show"), ms);
+      }
+
+      function loadProgress(){
+        try{
+          const raw = localStorage.getItem(STORAGE_KEY);
+          const data = raw ? JSON.parse(raw) : null;
+          const done = Array.isArray(data?.done) ? data.done : [];
+          return new Set(done.filter(n => Number.isInteger(n) && n>=0 && n<5));
+        }catch{ return new Set(); }
+      }
+      function saveProgress(doneSet){
+        const done = Array.from(doneSet.values()).sort((a,b)=>a-b);
+        localStorage.setItem(STORAGE_KEY, JSON.stringify({ done, ts: Date.now() }));
+      }
+
+      // ---------- UI render ----------
+      const stepsEl = document.getElementById("steps");
+      const doneCountEl = document.getElementById("doneCount");
+      const progressBarEl = document.getElementById("progressBar");
+      const progressBadgeEl = document.getElementById("progressBadge");
+      const holoPreviewImg = document.getElementById("holoPreviewImg");
+
+      let doneSet = loadProgress();
+
+      function pct(n){ return Math.round((n/5)*100); }
+
+      function render(){
+        const doneCount = doneSet.size;
+        doneCountEl.textContent = String(doneCount);
+        const p = pct(doneCount);
+        progressBadgeEl.textContent = `${p}% complete`;
+        progressBarEl.style.width = `${p}%`;
+
+        stepsEl.innerHTML = "";
+        STOPS.forEach((s, idx) => {
+          const done = doneSet.has(s.id);
+          const step = document.createElement("div");
+          step.className = "step";
+          step.innerHTML = `
+            <div class="row">
+              <div class="meta">
+                <div class="epoch">Stop ${idx+1} • ${s.epochRu} / ${s.epochEn}</div>
+                <div class="title">${s.place}</div>
+              </div>
+              <div class="badge ${done ? "ok": ""}">${done ? "DONE" : "ID "+s.id}</div>
+            </div>
+            <div class="facts">${s.shortRu}</div>
+            <div class="ctaRow">
+              <button class="btn ${done ? "ghost" : ""}" data-scan="${s.id}">
+                ${done ? "Scan again" : "Scan AR marker"}
+              </button>
+              <button class="btn ghost" data-info="${s.id}">Info</button>
+            </div>
+          `;
+          stepsEl.appendChild(step);
+        });
+
+        // preview cycles through next not-done
+        const next = STOPS.find(s => !doneSet.has(s.id)) ?? STOPS[0];
+        holoPreviewImg.src = next.character.sprite;
+      }
+
+      // ---------- Device check ----------
+      const deviceBadgeEl = document.getElementById("deviceBadge");
+      const deviceTextEl = document.getElementById("deviceText");
+      function deviceCheck(){
+        const hasMedia = !!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia);
+        const isSecure = location.protocol === "https:" || location.hostname === "localhost" || location.hostname === "127.0.0.1";
+        if(!isSecure){
+          deviceBadgeEl.textContent = "Needs HTTPS";
+          deviceBadgeEl.className = "badge";
+          deviceTextEl.innerHTML = "Camera requires <b>HTTPS</b>. Host this page on HTTPS (GitHub Pages / Netlify) or use <b>localhost</b> for testing.";
+          return;
+        }
+        if(!hasMedia){
+          deviceBadgeEl.textContent = "No camera API";
+          deviceBadgeEl.className = "badge";
+          deviceTextEl.textContent = "This browser can’t access the camera. Try Safari (iOS) or Chrome (Android).";
+          return;
+        }
+        deviceBadgeEl.textContent = "Ready";
+        deviceBadgeEl.className = "badge ok";
+        deviceTextEl.textContent = "Looks good. Press Scan at a stop, point to the marker ID, and keep it centered.";
+      }
+
+      // ---------- Info overlay (reuse markers overlay sheet) ----------
+      const markersOverlay = document.getElementById("markersOverlay");
+      const markerGrid = document.getElementById("markerGrid");
+      document.getElementById("openMarkersBtn").addEventListener("click", () => {
+        openMarkers();
+      });
+      document.getElementById("closeMarkersBtn").addEventListener("click", () => {
+        markersOverlay.classList.remove("show");
+      });
+      markersOverlay.addEventListener("click", (e) => {
+        if(e.target === markersOverlay) markersOverlay.classList.remove("show");
+      });
+
+      // Marker images will be filled by JS once assets are available
+      function openMarkers(){
+        markerGrid.innerHTML = "";
+        STOPS.forEach((s, i) => {
+          const div = document.createElement("div");
+          div.className = "markerCard";
+          const markerSrc = `assets/markers/marker_${s.id}.png`;
+          const printableSrc = `assets/markers/printable_${s.id}.svg`;
+          div.innerHTML = `
+            <img src="${markerSrc}" alt="AR marker ID ${s.id}" />
+            <div class="cap"><b>ID ${s.id}</b><br/>Stop ${i+1}: ${s.place}</div>
+            <div class="ctaRow" style="margin-top:10px">
+              <a class="btn ghost" style="text-align:center; width:100%" download="marker_${s.id}.png" href="${markerSrc}">Download marker</a>
+            </div>
+            <div class="ctaRow" style="margin-top:10px">
+              <a class="btn" style="text-align:center; width:100%" download="printable_${s.id}.svg" href="${printableSrc}">Printable (with label)</a>
+            </div>
+          `;
+          markerGrid.appendChild(div);
+        });
+        markersOverlay.classList.add("show");
+      }
+
+      // ---------- Reset ----------
+      document.getElementById("resetBtn").addEventListener("click", () => {
+        doneSet = new Set();
+        saveProgress(doneSet);
+        render();
+        toast("Progress reset.");
+      });
+
+      // ---------- AR Scanner ----------
+      const arScreen = document.getElementById("arScreen");
+      const arMount = document.getElementById("arMount");
+      const arTitle = document.getElementById("arTitle");
+      const arExitBtn = document.getElementById("arExitBtn");
+      const langCard = document.getElementById("langCard");
+      const factText = document.getElementById("factText");
+      const langHead = document.getElementById("langHead");
+      const langEnBtn = document.getElementById("langEnBtn");
+      const langSwBtn = document.getElementById("langSwBtn");
+      const continueBtn = document.getElementById("continueBtn");
+
+      let currentStopId = 0;
+      let sceneEl = null;
+      let foundOnce = false;
+      let selectedLang = "en";
+
+      function setFact(lang, stop){
+        const text = lang === "sw" ? stop.shortSw : stop.shortEn;
+        const label = lang === "sw" ? "Quick fact (Kiswahili)" : "Quick fact (English)";
+        factText.innerHTML = `${text}<small>${label} • Character: ${stop.character.name}</small>`;
+      }
+
+      async function loadScriptOnce(src){
+        if(document.querySelector(`script[data-src="${src}"]`)) return;
+        await new Promise((resolve, reject) => {
+          const s = document.createElement("script");
+          s.src = src;
+          s.async = true;
+          s.setAttribute("data-src", src);
+          s.onload = resolve;
+          s.onerror = reject;
+          document.head.appendChild(s);
+        });
+      }
+
+      function clearAR(){
+        langCard.style.display = "none";
+        arMount.innerHTML = "";
+        sceneEl = null;
+        foundOnce = false;
+      }
+
+      function exitAR(){
+        arScreen.classList.remove("show");
+        clearAR();
+      }
+
+      arExitBtn.addEventListener("click", exitAR);
+
+      function buildARSceneFor(stop){
+        // A-Frame + AR.js barcode tracking
+        // Hologram: 2D sprite as <a-image> with mild wobble animation.
+        const html = `
+          <a-scene
+            embedded
+            vr-mode-ui="enabled: false"
+            renderer="colorManagement: true; physicallyCorrectLights: false"
+            arjs="sourceType: webcam; debugUIEnabled: false; detectionMode: mono_and_matrix; matrixCodeType: 4x4_BCH_13_9_3;"
+          >
+            <a-assets>
+              <img id="sprite" src="${stop.character.sprite}" crossorigin="anonymous" />
+            </a-assets>
+
+            <a-marker
+              type="barcode"
+              value="${stop.id}"
+              id="marker"
+            >
+              <a-entity position="0 0 0">
+                <a-image
+                  src="#sprite"
+                  position="0 0.6 0"
+                  rotation="-90 0 0"
+                  width="1.05"
+                  height="1.05"
+                  material="transparent: true; opacity: 0.88"
+                  animation__float="property: position; dir: alternate; dur: 1200; easing: easeInOutSine; loop: true; to: 0 0.72 0"
+                  animation__wobble="property: rotation; dir: alternate; dur: 1400; easing: easeInOutSine; loop: true; from: -90 -6 0; to: -90 6 0"
+                ></a-image>
+                <a-plane
+                  position="0 0.01 0"
+                  rotation="-90 0 0"
+                  width="1.3"
+                  height="1.3"
+                  material="color: #00e5ff; transparent: true; opacity: 0.12"
+                ></a-plane>
+              </a-entity>
+            </a-marker>
+
+            <a-entity camera></a-entity>
+          </a-scene>
+        `;
+        arMount.innerHTML = html;
+        sceneEl = arMount.querySelector("a-scene");
+
+        const marker = arMount.querySelector("#marker");
+        marker.addEventListener("markerFound", () => {
+          if(foundOnce) return;
+          foundOnce = true;
+          langCard.style.display = "block";
+          selectedLang = "en";
+          langHead.textContent = "Marker found! Choose language";
+          setFact(selectedLang, stop);
+          toast(`Stop ${stop.id + 1} unlocked.`);
+        });
+      }
+
+      async function startAR(stopId){
+        const stop = STOPS.find(s => s.id === stopId);
+        if(!stop) return;
+
+        // Guard: HTTPS + camera API
+        const hasMedia = !!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia);
+        const isSecure = location.protocol === "https:" || location.hostname === "localhost" || location.hostname === "127.0.0.1";
+        if(!isSecure){
+          toast("Camera needs HTTPS. Open on HTTPS hosting.");
+          openMarkers();
+          return;
+        }
+        if(!hasMedia){
+          toast("No camera API in this browser. Try Safari/Chrome.");
+          openMarkers();
+          return;
+        }
+
+        currentStopId = stopId;
+        arTitle.innerHTML = `Scan <b>ID ${stop.id}</b> • ${stop.epochEn} • ${stop.place}`;
+        arScreen.classList.add("show");
+        clearAR();
+
+        try{
+          // Lazy-load libs (CDN)
+          await loadScriptOnce("https://aframe.io/releases/1.5.0/aframe.min.js");
+          await loadScriptOnce("https://cdn.jsdelivr.net/gh/AR-js-org/AR.js@3.4.5/aframe/build/aframe-ar.js");
+        }catch{
+          toast("Failed to load AR libraries (network).");
+          exitAR();
+          return;
+        }
+
+        // Quick permission preflight (gives nicer errors)
+        try{
+          const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" }, audio: false });
+          stream.getTracks().forEach(t => t.stop());
+        }catch(e){
+          toast("Camera blocked. Allow camera access in browser settings.");
+          exitAR();
+          return;
+        }
+
+        buildARSceneFor(stop);
+      }
+
+      langEnBtn.addEventListener("click", () => {
+        selectedLang = "en";
+        setFact("en", STOPS.find(s => s.id === currentStopId));
+      });
+      langSwBtn.addEventListener("click", () => {
+        selectedLang = "sw";
+        setFact("sw", STOPS.find(s => s.id === currentStopId));
+      });
+      continueBtn.addEventListener("click", () => {
+        if(!foundOnce){
+          toast("Scan the marker first.");
+          return;
+        }
+        doneSet.add(currentStopId);
+        saveProgress(doneSet);
+        exitAR();
+        render();
+      });
+
+      // ---------- Step click handlers ----------
+      stepsEl.addEventListener("click", (e) => {
+        const btn = e.target.closest("button");
+        if(!btn) return;
+        if(btn.dataset.scan != null){
+          const id = Number(btn.dataset.scan);
+          startAR(id);
+        }
+        if(btn.dataset.info != null){
+          const id = Number(btn.dataset.info);
+          const s = STOPS.find(x => x.id === id);
+          if(!s) return;
+          toast(`${s.epochEn}: ${s.character.name}`);
+          openMarkers();
+        }
+      });
+      document.getElementById("quickScanBtn").addEventListener("click", () => startAR(0));
+
+      // Init
+      render();
+      deviceCheck();
+    </script>
+  </body>
+</html>

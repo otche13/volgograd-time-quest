@@ -1,0 +1,53 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#00101d"/>
+      <stop offset="1" stop-color="#002a45"/>
+    </linearGradient>
+    <linearGradient id="holo" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#00f6ff" stop-opacity=".95"/>
+      <stop offset=".55" stop-color="#00b8ff" stop-opacity=".78"/>
+      <stop offset="1" stop-color="#00f6ff" stop-opacity=".55"/>
+    </linearGradient>
+    <filter id="glow">
+      <feGaussianBlur stdDeviation="7" result="b"/>
+      <feColorMatrix in="b" type="matrix" values="
+        0 0 0 0 0
+        0 0 0 0 0.9
+        0 0 0 0 1
+        0 0 0 .95 0" result="c"/>
+      <feMerge>
+        <feMergeNode in="c"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+    <pattern id="scan" width="10" height="10" patternUnits="userSpaceOnUse">
+      <rect width="10" height="10" fill="none"/>
+      <rect y="6" width="10" height="1" fill="#bfffff" opacity=".22"/>
+    </pattern>
+  </defs>
+
+  <rect width="512" height="512" rx="44" fill="url(#bg)"/>
+  <rect width="512" height="512" rx="44" fill="url(#scan)" opacity=".55"/>
+
+  <g filter="url(#glow)">
+    <!-- helmet bubble -->
+    <circle cx="256" cy="212" r="88" fill="url(#holo)" opacity=".82"/>
+    <circle cx="256" cy="212" r="78" fill="#001620" opacity=".35"/>
+    <circle cx="230" cy="190" r="26" fill="#bfffff" opacity=".18"/>
+    <!-- head -->
+    <circle cx="256" cy="226" r="44" fill="url(#holo)" opacity=".88"/>
+    <!-- suit -->
+    <path d="M152 440c10-104 56-176 100-202 10 14 26 22 44 22s34-8 44-22c44 26 90 98 100 202H152z" fill="url(#holo)" opacity=".88"/>
+    <!-- chest panel -->
+    <rect x="216" y="316" width="80" height="62" rx="14" fill="#bfffff" opacity=".20"/>
+    <rect x="228" y="330" width="56" height="10" rx="5" fill="#bfffff" opacity=".18"/>
+    <rect x="228" y="350" width="56" height="10" rx="5" fill="#bfffff" opacity=".18"/>
+    <!-- base -->
+    <ellipse cx="256" cy="452" rx="170" ry="18" fill="#00e5ff" opacity=".18"/>
+  </g>
+
+  <g font-family="system-ui, -apple-system, Segoe UI, Roboto, Arial" text-anchor="middle">
+    <text x="256" y="486" font-size="20" fill="#bfffff" opacity=".9">Cosmonaut</text>
+  </g>
+</svg>
