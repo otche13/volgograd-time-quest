@@ -26,8 +26,14 @@
       .panel { position: absolute; inset: 0; display: grid; grid-template-rows: auto 1fr auto; }
       .bar { padding: 12px; display: flex; justify-content: space-between; align-items: center; background: #11182a; }
       .bar button { background: #ff6b6b; color: #300b0b; }
-      .videoWrap { display: grid; place-items: center; padding: 12px; }
-      video { width: 100%; max-width: 720px; max-height: 70vh; background: #000; border-radius: 10px; }
+      .mediaWrap { display: grid; place-items: center; padding: 12px; }
+      .photo {
+        width: min(92vw, 430px);
+        aspect-ratio: 9 / 16;
+        object-fit: cover;
+        background: #000;
+        border-radius: 10px;
+      }
       .name { padding: 10px 12px; color: #cfd5ea; font-size: 13px; background: #11182a; }
     </style>
   </head>
@@ -49,11 +55,11 @@
     <div id="overlay" class="overlay">
       <div class="panel">
         <div class="bar">
-          <strong id="videoTitle">Видео-заглушка</strong>
+          <strong id="videoTitle">Фото</strong>
           <button id="closeBtn">Close</button>
         </div>
-        <div class="videoWrap">
-          <video id="video" controls playsinline preload="metadata"></video>
+        <div class="mediaWrap">
+          <img id="photo" class="photo" alt="Mamayev Kurgan photo" />
         </div>
         <div id="videoName" class="name"></div>
       </div>
@@ -65,6 +71,7 @@
           pageTitle: "Волгоградский исторический квест",
           pageSub: "Исторический маршрут по ключевым объектам города.",
           pageHint: "Положите ваши видео в <code>assets/videos/</code> с точными именами, показанными внизу плеера.",
+          pageHint: "Положите фото в <code>assets/images/</code> с точным именем, показанным внизу окна.",
           close: "Закрыть",
           scan: "Сканировать AR-код",
           stop: "Точка",
@@ -101,6 +108,7 @@
           pageTitle: "Volgograd History Quest",
           pageSub: "A historical route through key city landmarks.",
           pageHint: "Put your videos into <code>assets/videos/</code> with the exact filenames shown in the player footer.",
+          pageHint: "Put the photo into <code>assets/images/</code> with the exact filename shown in the footer.",
           close: "Close",
           scan: "Scan AR code",
           stop: "Stop",
@@ -137,25 +145,25 @@
 
       const ITEMS = [
         {
-          video: "assets/videos/stop1_old_sarepta.mp4"
+          image: "assets/images/stop1_old_sarepta.jpg"
         },
         {
-          video: "assets/videos/stop2_mamayev_kurgan.mp4"
+          image: "assets/images/stop2_mamayev_kurgan.png"
         },
         {
-          video: "assets/videos/stop3_pavlov_house.mp4"
+          image: "assets/images/stop3_pavlov_house.jpg"
         },
         {
-          video: "assets/videos/stop4_planetarium.mp4"
+          image: "assets/images/stop4_planetarium.jpg"
         },
         {
-          video: "assets/videos/stop5_fountain.mp4"
+          image: "assets/images/stop5_fountain.jpg"
         }
       ];
 
       const list = document.getElementById("list");
       const overlay = document.getElementById("overlay");
-      const video = document.getElementById("video");
+      const photo = document.getElementById("photo");
       const videoTitle = document.getElementById("videoTitle");
       const videoName = document.getElementById("videoName");
       const closeBtn = document.getElementById("closeBtn");
@@ -190,19 +198,16 @@
         });
       }
 
-      function openVideo(item) {
+      function openPhoto(item) {
         const idx = ITEMS.indexOf(item);
         videoTitle.textContent = I18N[currentLang].items[idx].title;
-        videoName.textContent = `${I18N[currentLang].expected}: ${item.video}`;
-        video.src = item.video;
+        videoName.textContent = `${I18N[currentLang].expected}: ${item.image}`;
+        photo.src = item.image;
         overlay.classList.add("show");
-        video.play().catch(() => {});
       }
 
       function closeVideo() {
-        video.pause();
-        video.removeAttribute("src");
-        video.load();
+        photo.removeAttribute("src");
         overlay.classList.remove("show");
       }
 
@@ -213,7 +218,7 @@
         // Only Mamayev Kurgan button opens video now.
         if (idx !== 1) return;
         const item = ITEMS[idx];
-        openVideo(item);
+        openPhoto(item);
       });
 
       closeBtn.addEventListener("click", closeVideo);
