@@ -365,7 +365,7 @@
             <div class="logo" aria-hidden="true"></div>
             <div>
               <h1>Volgograd Time Quest</h1>
-              <div class="subtitle">Mobile AR route • Youth-friendly • English / Kiswahili</div>
+              <div class="subtitle">Mobile AR route • Youth-friendly • Russian / English</div>
             </div>
           </div>
           <div class="chiprow">
@@ -448,6 +448,9 @@
         <div class="p">
           <b>Important:</b> each stop has its own marker. The scanner checks the marker ID, so you can’t “skip” a stop with the wrong one.
         </div>
+        <div class="p">
+          <b>WWII soldier (3D model):</b> use <b>ID 1</b> for Mamayev Kurgan and <b>ID 2</b> for Pavlov’s House.
+        </div>
       </div>
     </div>
 
@@ -498,7 +501,11 @@
           shortRu: "Символ Победы в Сталинградской битве: мемориал, скульптура, зал славы.",
           shortEn: "A key symbol of the Battle of Stalingrad: memorial complex, iconic statue, and the Hall of Military Glory.",
           shortSw: "Alama muhimu ya Vita vya Stalingrad: eneo la kumbukumbu, sanamu maarufu, na Ukumbi wa Utukufu wa Kijeshi.",
-          character: { name: "Soviet Soldier (WWII)", sprite: "assets/characters/ussr_soldier.svg" },
+          character: {
+            name: "Soviet Soldier (WWII)",
+            sprite: "assets/characters/ussr_soldier.svg",
+            model3d: "assets/models/ww2_soviet_uniform.glb"
+          },
         },
         {
           id: 2,
@@ -508,7 +515,11 @@
           shortRu: "Дом-легенда обороны: удерживался бойцами недели под постоянными атаками.",
           shortEn: "A legendary defense point: held for weeks under heavy attacks.",
           shortSw: "Sehemu ya ulinzi wa kihistoria: ilishikiliwa kwa wiki chini ya mashambulizi makali.",
-          character: { name: "Soviet Commander", sprite: "assets/characters/ussr_commander.svg" },
+          character: {
+            name: "Soviet Commander",
+            sprite: "assets/characters/ussr_commander.svg",
+            model3d: "assets/models/ww2_soviet_uniform.glb"
+          },
         },
         {
           id: 3,
@@ -599,7 +610,7 @@
 
         // preview cycles through next not-done
         const next = STOPS.find(s => !doneSet.has(s.id)) ?? STOPS[0];
-        holoPreviewImg.src = next.character.sprite;
+        holoPreviewImg.src = next.character.sprite || "assets/characters/ussr_soldier.svg";
       }
 
       // ---------- Device check ----------
@@ -685,10 +696,36 @@
       let sceneEl = null;
       let foundOnce = false;
       let selectedLang = "en";
+      const soldierAudio = new Audio("assets/audio/soldier_ru.mp3");
+      soldierAudio.preload = "auto";
+
+      function stopSoldierVoice(){
+        try{
+          soldierAudio.pause();
+          soldierAudio.currentTime = 0;
+          window.speechSynthesis?.cancel();
+        }catch{}
+      }
+
+      function playSoldierVoice(stop){
+        // Only for WWII soldier points (IDs 1 and 2)
+        if(!(stop.id === 1 || stop.id === 2)) return;
+        stopSoldierVoice();
+        soldierAudio.play().catch(() => {
+          // Fallback when mp3 is missing or blocked
+          if("speechSynthesis" in window){
+            const u = new SpeechSynthesisUtterance("Боец на позиции. Объект обнаружен. Продолжаем маршрут.");
+            u.lang = "ru-RU";
+            u.rate = 0.95;
+            u.pitch = 1.0;
+            window.speechSynthesis.speak(u);
+          }
+        });
+      }
 
       function setFact(lang, stop){
-        const text = lang === "sw" ? stop.shortSw : stop.shortEn;
-        const label = lang === "sw" ? "Quick fact (Kiswahili)" : "Quick fact (English)";
+        const text = lang === "ru" ? stop.shortRu : stop.shortEn;
+        const label = lang === "ru" ? "Краткий факт (Русский)" : "Quick fact (English)";
         factText.innerHTML = `${text}<small>${label} • Character: ${stop.character.name}</small>`;
       }
 
@@ -710,6 +747,7 @@
         arMount.innerHTML = "";
         sceneEl = null;
         foundOnce = false;
+        stopSoldierVoice();
       }
 
       function exitAR(){
@@ -721,7 +759,26 @@
 
       function buildARSceneFor(stop){
         // A-Frame + AR.js barcode tracking
-        // Hologram: 2D sprite as <a-image> with mild wobble animation.
+        const modelContent = stop.character.model3d ? `
+              <a-entity
+                gltf-model="${stop.character.model3d}"
+                position="0 0 0.1"
+                rotation="-90 0 0"
+                scale="0.3 0.3 0.3"
+                animation__float="property: position; dir: alternate; dur: 1300; easing: easeInOutSine; loop: true; to: 0 0.1 0.1"
+              ></a-entity>
+        ` : `
+              <a-image
+                src="#sprite"
+                position="0 0.6 0"
+                rotation="-90 0 0"
+                width="1.05"
+                height="1.05"
+                material="transparent: true; opacity: 0.88"
+                animation__float="property: position; dir: alternate; dur: 1200; easing: easeInOutSine; loop: true; to: 0 0.72 0"
+                animation__wobble="property: rotation; dir: alternate; dur: 1400; easing: easeInOutSine; loop: true; from: -90 -6 0; to: -90 6 0"
+              ></a-image>
+        `;
         const html = `
           <a-scene
             embedded
@@ -739,16 +796,7 @@
               id="marker"
             >
               <a-entity position="0 0 0">
-                <a-image
-                  src="#sprite"
-                  position="0 0.6 0"
-                  rotation="-90 0 0"
-                  width="1.05"
-                  height="1.05"
-                  material="transparent: true; opacity: 0.88"
-                  animation__float="property: position; dir: alternate; dur: 1200; easing: easeInOutSine; loop: true; to: 0 0.72 0"
-                  animation__wobble="property: rotation; dir: alternate; dur: 1400; easing: easeInOutSine; loop: true; from: -90 -6 0; to: -90 6 0"
-                ></a-image>
+                ${modelContent}
                 <a-plane
                   position="0 0.01 0"
                   rotation="-90 0 0"
@@ -773,6 +821,7 @@
           selectedLang = "en";
           langHead.textContent = "Marker found! Choose language";
           setFact(selectedLang, stop);
+          playSoldierVoice(stop);
           toast(`Stop ${stop.id + 1} unlocked.`);
         });
       }
@@ -823,13 +872,15 @@
         buildARSceneFor(stop);
       }
 
+      langEnBtn.textContent = "English";
+      langSwBtn.textContent = "Русский";
       langEnBtn.addEventListener("click", () => {
         selectedLang = "en";
         setFact("en", STOPS.find(s => s.id === currentStopId));
       });
       langSwBtn.addEventListener("click", () => {
-        selectedLang = "sw";
-        setFact("sw", STOPS.find(s => s.id === currentStopId));
+        selectedLang = "ru";
+        setFact("ru", STOPS.find(s => s.id === currentStopId));
       });
       continueBtn.addEventListener("click", () => {
         if(!foundOnce){
