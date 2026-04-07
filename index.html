@@ -610,7 +610,7 @@
 
         // preview cycles through next not-done
         const next = STOPS.find(s => !doneSet.has(s.id)) ?? STOPS[0];
-        holoPreviewImg.src = next.character.sprite || "assets/characters/ussr_soldier.svg";
+        holoPreviewImg.src = next.character.sprite;
       }
 
       // ---------- Device check ----------
@@ -767,14 +767,6 @@
                 scale="0.85 0.85 0.85"
                 animation__float="property: position; dir: alternate; dur: 1300; easing: easeInOutSine; loop: true; to: 0 0.08 0"
               ></a-entity>
-              <a-box
-                id="soldierFallback"
-                position="0 0.35 0"
-                width="0.34"
-                height="0.7"
-                depth="0.22"
-                material="color: #00e5ff; transparent: true; opacity: 0.28"
-              ></a-box>
         ` : `
               <a-image
                 src="#sprite"
@@ -834,18 +826,6 @@
           playSoldierVoice(stop);
           toast(`Stop ${stop.id + 1} unlocked.`);
         });
-
-        const soldierModelWrap = arMount.querySelector("#soldierModelWrap");
-        const soldierFallback = arMount.querySelector("#soldierFallback");
-        if(soldierModelWrap && soldierFallback){
-          soldierModelWrap.addEventListener("model-loaded", () => {
-            soldierFallback.setAttribute("visible", "false");
-          });
-          soldierModelWrap.addEventListener("model-error", () => {
-            toast("3D model not loaded. Showing fallback.");
-            soldierFallback.setAttribute("visible", "true");
-          });
-        }
       }
 
       async function startAR(stopId){
@@ -870,6 +850,7 @@
         arTitle.innerHTML = `Scan <b>ID ${stop.id}</b> • ${stop.epochEn} • ${stop.place}`;
         arScreen.classList.add("show");
         clearAR();
+        toast("Запрашиваю доступ к камере...");
 
         try{
           // Lazy-load libs (CDN)
@@ -881,7 +862,7 @@
           return;
         }
 
-        // Quick permission preflight (gives nicer errors)
+        // Explicit permission request before AR scene starts
         try{
           const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" }, audio: false });
           stream.getTracks().forEach(t => t.stop());
